@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  properties Property[]
+  inquiries  Inquiry[]
+  favorites  Favorite[]
+}
+
+enum Role {
+  USER
+  AGENT
+  ADMIN
+}
+
+// Property listing model
+model Property {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  type        PropertyType
+  status      PropertyStatus @default(AVAILABLE)
+  
+  // Location
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  latitude    Float?
+  longitude   Float?
+  
+  // Details
+  bedrooms    Int
+  bathrooms   Int
+  area        Float    // in square meters
+  yearBuilt   Int?
+  
+  // Features
+  features    String[] // Array of feature strings
+  
+  // Images
+  images      PropertyImage[]
+  
+  // Relations
+  agentId     String
+  agent       User     @relation(fields: [agentId], references: [id])
+  
+  inquiries   Inquiry[]
+  favorites   Favorite[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum PropertyType {
+  HOUSE
+  APARTMENT
+  VILLA
+  LAND
+  COMMERCIAL
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  SOLD
+  RENTED
+  PENDING
+}
+
+// Property images
+model PropertyImage {
+  id         String   @id @default(uuid())
+  url        String
+  isPrimary  Boolean  @default(false)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+// Inquiry/Contact form
+model Inquiry {
+  id         String   @id @default(uuid())
+  message    String
+  status     InquiryStatus @default(PENDING)
+  
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum InquiryStatus {
+  PENDING
+  RESPONDED
+  CLOSED
+}
+
+// User favorites
+model Favorite {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
