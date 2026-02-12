@@ -3,13 +3,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth.middleware';
+import { validateRequest, registerSchema, loginSchema } from '../middleware/validation';
 
 const router = Router();
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', validateRequest(registerSchema), async (req, res) => {
   try {
     const { email, password, name, phone, role } = req.body;
+
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -55,9 +57,10 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', validateRequest(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
+
 
     // Find user
     const user = await prisma.user.findUnique({ where: { email } });

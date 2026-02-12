@@ -21,9 +21,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  properties Property[]
-  inquiries  Inquiry[]
-  favorites  Favorite[]
+  properties     Property[]
+  inquiries      Inquiry[]
+  favorites      Favorite[]
+  bookings       Booking[]
+  transactions   Transaction[]
+  propertyViews  PropertyView[]
 }
 
 enum Role {
@@ -39,7 +42,8 @@ model Property {
   description String
   price       Float
   type        PropertyType
-  status      PropertyStatus @default(AVAILABLE)
+  status      PropertyStatus @default(DRAFT)
+  slug        String         @unique
   
   // Location
   address     String
@@ -67,10 +71,22 @@ model Property {
   
   inquiries   Inquiry[]
   favorites   Favorite[]
+  bookings    Booking[]
+  views       PropertyView[]
+  
+  // Intelligence Layer (Investor Specs)
+  roiEstimation Float?    // Annual ROI %
+  rentalYield   Float?    // Annual Yield %
+  areaGrowth    Float?    // 5Y Area Growth %
+  nearbyPlaces  Json?     // List of nearby facilities { school: '2km', mall: '500m' }
+  
+  isFeatured  Boolean  @default(false)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+
 
 enum PropertyType {
   HOUSE
@@ -81,10 +97,12 @@ enum PropertyType {
 }
 
 enum PropertyStatus {
-  AVAILABLE
+  DRAFT
+  PUBLISHED
   SOLD
   RENTED
   PENDING
+  ARCHIVED
 }
 
 // Property images
@@ -103,6 +121,9 @@ model Inquiry {
   message    String
   status     InquiryStatus @default(PENDING)
   
+  agentResponse String?
+  respondedAt   DateTime?
+  
   userId     String
   user       User     @relation(fields: [userId], references: [id])
   
@@ -117,6 +138,76 @@ enum InquiryStatus {
   PENDING
   RESPONDED
   CLOSED
+  NEW
+  CONTACTED
+}
+
+// Booking for viewing
+model Booking {
+  id          String   @id @default(uuid())
+  bookingDate DateTime
+  message     String?
+  status      BookingStatus @default(PENDING)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  propertyId  String
+  property    Property @relation(fields: [propertyId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+// Transactions (for payments, subscriptions, or featured listings)
+model Transaction {
+  id            String   @id @default(uuid())
+  amount        Float
+  status        TransactionStatus @default(PENDING)
+  type          TransactionType
+  paymentMethod String?
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum TransactionType {
+  SUBSCRIPTION
+  FEATURED_LISTING
+  COMMISSION
+}
+
+// Analytics for property views
+model PropertyView {
+  id         String   @id @default(uuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  
+  userId     String? // Optional if visitor is not logged in
+  user       User?    @relation(fields: [userId], references: [id])
+  
+  ipAddress  String?
+  userAgent  String?
+  
+  createdAt  DateTime @default(now())
 }
 
 // User favorites
@@ -130,3 +221,4 @@ model Favorite {
 
   @@unique([userId, propertyId])
 }
+

@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -14,7 +16,9 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,11 +28,13 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  if (pathname?.startsWith('/dashboard')) return null;
+
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled 
-          ? 'py-3 bg-white/70 backdrop-blur-md border-b border-slate-200/50 shadow-sm' 
+          ? 'py-3 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-lg shadow-slate-900/5' 
           : 'py-6 bg-transparent'
       }`}
     >
@@ -43,19 +49,22 @@ export default function Navbar() {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className={`text-xl font-bold transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>Nusava</span>
+            <span className={`text-xl font-bold transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+              Nusava
+            </span>
           </Link>
 
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${
+                className={`text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 ${
                   pathname === link.href
-                    ? scrolled ? 'text-slate-900' : 'text-white'
-                    : scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
+                    ? scrolled ? 'text-blue-600' : 'text-white'
+                    : scrolled ? 'text-slate-600 hover:text-blue-600' : 'text-white/70 hover:text-white'
                 }`}
               >
                 {link.name}
@@ -63,25 +72,100 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link
-              href="/contact"
-              className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${
-                scrolled 
-                  ? 'bg-white border border-slate-200 text-slate-900 shadow-none hover:bg-slate-900 hover:text-white hover:border-slate-900' 
-                  : 'bg-white text-slate-900 shadow-md hover:shadow-xl hover:scale-105'
-              }`}
-            >
-              Contact Us
-            </Link>
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center gap-4">
+            {!user ? (
+              <>
+                <Link
+                  href="/login"
+                  className={`text-sm font-bold px-6 py-2.5 rounded-xl transition-all ${
+                    scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-8 py-3 bg-white text-slate-900 rounded-full text-sm font-bold shadow-lg shadow-slate-200/50 hover:bg-slate-50 hover:-translate-y-0.5 active:translate-y-0 transition-all border border-slate-100"
+                >
+                  Join Us
+                </Link>
+
+              </>
+            ) : (
+              <div className="relative">
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className={`flex items-center gap-3 p-1 pr-4 rounded-full transition-all ${
+                    scrolled ? 'bg-slate-100 hover:bg-slate-200' : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {user.name[0].toUpperCase()}
+                  </div>
+                  <span className={`text-sm font-bold ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+                    {user.name.split(' ')[0]}
+                  </span>
+                  <svg className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''} ${scrolled ? 'text-slate-400' : 'text-white/50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100 p-2 overflow-hidden"
+                    >
+                      <div className="px-4 py-3 border-b border-slate-50 mb-1">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Signed in as</p>
+                        <p className="text-sm font-bold text-slate-900 truncate">{user.email}</p>
+                      </div>
+                      
+                      {user.role !== 'USER' && (
+                        <Link 
+                          href="/dashboard"
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                          </svg>
+                          My Dashboard
+                        </Link>
+                      )}
+                      
+                      <Link 
+                        href="/inquiries"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                        </svg>
+                        My Inquiries
+                      </Link>
+
+                      <button 
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={`md:hidden p-2 transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}
-            aria-label="Toggle menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isOpen ? (
@@ -94,33 +178,50 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
-          <div className={`md:hidden mt-6 pb-6 border-t pt-6 ${scrolled ? 'border-slate-200' : 'border-white/10'}`}>
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`py-2 text-base font-medium transition-colors ${
-                    pathname === link.href
-                      ? scrolled ? 'text-slate-900' : 'text-white'
-                      : scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              <Link
-                href="/contact"
-                onClick={() => setIsOpen(false)}
-                className="mt-4 py-3 bg-slate-900 text-white text-center font-bold rounded-full shadow-lg"
-              >
-                Contact Us
-              </Link>
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className={`mt-6 pb-6 border-t pt-6 flex flex-col gap-4 ${scrolled ? 'border-slate-200' : 'border-white/10'}`}>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`text-lg font-bold transition-all ${
+                      pathname === link.href
+                        ? scrolled ? 'text-blue-600' : 'text-white'
+                        : scrolled ? 'text-slate-600' : 'text-white/70'
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+                
+                {!user ? (
+                  <Link
+                    href="/register"
+                    onClick={() => setIsOpen(false)}
+                    className="mt-4 py-4 bg-blue-600 text-white text-center font-bold rounded-2xl shadow-lg"
+                  >
+                    Get Started
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => { logout(); setIsOpen(false); }}
+                    className="mt-4 py-4 bg-red-50 text-red-600 text-center font-bold rounded-2xl"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </header>
   );

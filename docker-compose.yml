@@ -1,5 +1,5 @@
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
     container_name: nusava-postgres
     restart: unless-stopped
@@ -12,5 +12,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
 volumes:
   postgres_data:
+

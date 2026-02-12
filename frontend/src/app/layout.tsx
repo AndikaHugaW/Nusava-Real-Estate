@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SmoothScroll from "@/components/SmoothScroll";
+import { AuthProvider } from "@/context/AuthContext";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,14 +24,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="light">
+    <html lang="id" className="light" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
-        <Navbar />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <SmoothScroll>
+            <Navbar />
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <Footer />
+          </SmoothScroll>
+        </AuthProvider>
       </body>
     </html>
+
   );
 }

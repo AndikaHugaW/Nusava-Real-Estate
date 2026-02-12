@@ -1,10 +1,8 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
+"use client";
 
-export const metadata: Metadata = {
-  title: 'Blog - Nusava Real Estate',
-  description: 'Articles and tips about property, investment, and lifestyle from Nusava.',
-};
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import RevealText from '@/components/RevealText';
 
 const blogPosts = [
   {
@@ -58,47 +56,85 @@ const categories = ['All', 'Tips', 'Investment', 'Home Improvement', 'Lifestyle'
 export default function BlogsPage() {
   const featuredPost = blogPosts[0];
 
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
+  };
+
+  const staggerContainer = {
+    initial: { opacity: 0 },
+    whileInView: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    },
+    viewport: { once: true }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* ===== HERO SECTION ===== */}
-      <section className="relative min-h-[60vh] flex items-center">
+      <section className="relative min-h-[60vh] flex items-center overflow-hidden">
         {/* Background */}
-        <div className="absolute inset-0 z-0">
+        <motion.div 
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 z-0"
+        >
           <img
             src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80"
             alt="Modern architecture"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-slate-900/50" />
-        </div>
+        </motion.div>
 
         {/* Content */}
         <div className="relative z-10 w-full max-w-screen-2xl mx-auto px-6 py-32 lg:px-16 text-center">
-          <div className="max-w-3xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl mx-auto"
+          >
             <p className="text-white/70 text-sm tracking-wide mb-8 uppercase">
               Our Blog
             </p>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-[1.1] mb-8">
-              Insights &
-              <br />
-              <span className="text-white">Expert Tips</span>
+              <RevealText className="justify-center">Insights &</RevealText>
+              <RevealText className="justify-center text-white font-normal" delay={0.3}>Expert Tips</RevealText>
             </h1>
             <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed font-light">
               Get the latest information about property, investment, and lifestyle from our experts.
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Featured Post */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-16">
-          <div className="inline-block bg-white px-6 py-2 rounded-full mb-8 border border-slate-100 shadow-sm">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="inline-block bg-white px-6 py-2 rounded-full mb-8 border border-slate-100 shadow-sm"
+          >
             <p className="text-slate-700 text-sm font-medium">Featured Article</p>
-          </div>
+          </motion.div>
           
           <Link href={`/blogs/${featuredPost.id}`} className="group block">
-            <div className="grid lg:grid-cols-2 gap-8 bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="grid lg:grid-cols-2 gap-8 bg-white rounded-[3rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4"
+            >
               <div className="relative aspect-video lg:aspect-auto overflow-hidden rounded-[2.5rem]">
                 <img
                   src={featuredPost.image}
@@ -135,7 +171,7 @@ export default function BlogsPage() {
                   </svg>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </Link>
         </div>
       </section>
@@ -163,81 +199,120 @@ export default function BlogsPage() {
       {/* Blog Grid */}
       <section className="py-24">
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
             {blogPosts.slice(1).map((post) => (
               <Link
                 key={post.id}
                 href={`/blogs/${post.id}`}
-                className="group bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4"
+                className="group block"
               >
-                <div className="relative aspect-video overflow-hidden rounded-[2rem] mb-6">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="px-4 py-2 bg-white/95 text-slate-900 text-[10px] font-bold rounded-full uppercase tracking-tighter shadow-sm">
-                      {post.category}
-                    </span>
-                  </div>
-                </div>
-                <div className="px-4 pb-4">
-                  <div className="flex items-center gap-3 mb-4">
+                <motion.div 
+                  variants={fadeInUp}
+                  whileHover={{ y: -10 }}
+                  className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all p-4"
+                >
+                  <div className="relative aspect-video overflow-hidden rounded-[2rem] mb-6">
                     <img
-                      src={post.authorImage}
-                      alt={post.author}
-                      className="w-8 h-8 rounded-full object-cover"
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">{post.author}</p>
-                      <p className="text-xs text-slate-400">{post.date}</p>
+                    <div className="absolute top-4 left-4">
+                      <span className="px-4 py-2 bg-white/95 text-slate-900 text-[10px] font-bold rounded-full uppercase tracking-tighter shadow-sm">
+                        {post.category}
+                      </span>
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-black transition-colors line-clamp-2 leading-tight">
-                    {post.title}
-                  </h3>
-                  <p className="text-slate-500 text-sm mb-6 line-clamp-2 font-light leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <span className="text-xs text-slate-400 uppercase tracking-widest">{post.readTime} READ</span>
-                    <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-slate-900 transition-colors">
-                      <svg className="w-4 h-4 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 17L17 7M17 7H7M17 7V17" />
-                      </svg>
+                  <div className="px-4 pb-4">
+                    <div className="flex items-center gap-3 mb-4">
+                      <img
+                        src={post.authorImage}
+                        alt={post.author}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">{post.author}</p>
+                        <p className="text-xs text-slate-400">{post.date}</p>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-black transition-colors line-clamp-2 leading-tight">
+                      {post.title}
+                    </h3>
+                    <p className="text-slate-500 text-sm mb-6 line-clamp-2 font-light leading-relaxed">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                      <span className="text-xs text-slate-400 uppercase tracking-widest">{post.readTime} READ</span>
+                      <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-slate-900 transition-colors">
+                        <svg className="w-4 h-4 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 17L17 7M17 7H7M17 7V17" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </Link>
             ))}
-          </div>
+          </motion.div>
 
           {/* Load More */}
-          <div className="text-center mt-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-16"
+          >
             <button className="inline-flex items-center px-12 py-4 bg-slate-900 text-white font-bold rounded-full hover:scale-105 transition-all shadow-xl">
               Load More Articles
             </button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       <section className="py-24 bg-slate-900 rounded-[3rem] mx-6 lg:mx-16 mb-24 overflow-hidden relative">
-        <div className="absolute inset-0 opacity-20">
+        <motion.div 
+          initial={{ scale: 1.1 }}
+          whileInView={{ scale: 1 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 opacity-20"
+        >
           <img 
             src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=80" 
             className="w-full h-full object-cover"
             alt="Cityscape"
           />
-        </div>
+        </motion.div>
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-4xl font-bold text-white mb-6"
+          >
             Subscribe to Our Newsletter
-          </h2>
-          <p className="text-white/80 text-lg mb-10">
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-white/80 text-lg mb-10"
+          >
             Get the latest articles and property tips delivered to your inbox.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto"
+          >
             <input
               type="email"
               placeholder="Enter your email"
@@ -246,7 +321,7 @@ export default function BlogsPage() {
             <button className="px-10 py-4 bg-white text-slate-900 font-bold rounded-full hover:scale-105 transition-all shadow-xl">
               Subscribe
             </button>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>
