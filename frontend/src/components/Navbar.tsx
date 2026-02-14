@@ -28,6 +28,9 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const isDarkPage = pathname?.startsWith('/property/') || pathname === '/wishlist' || pathname === '/profile';
+  const shouldUseDarkTheme = scrolled || isDarkPage;
+
   if (pathname?.startsWith('/dashboard')) return null;
 
   return (
@@ -35,7 +38,9 @@ export default function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled 
           ? 'py-3 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-lg shadow-slate-900/5' 
-          : 'py-6 bg-transparent'
+          : isDarkPage 
+            ? 'py-6 bg-white border-b border-slate-100'
+            : 'py-6 bg-transparent'
       }`}
     >
       <nav className="max-w-screen-2xl mx-auto px-6 lg:px-16">
@@ -44,12 +49,12 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-3">
             <div className="w-10 h-10 flex items-center justify-center">
               <img 
-                src={scrolled ? "/logo/logo-dark.svg" : "/logo/logo-white.svg"} 
+                src={shouldUseDarkTheme ? "/logo/logo-dark.svg" : "/logo/logo-white.svg"} 
                 alt="Nusava Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className={`text-xl font-bold transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+            <span className={`text-xl font-bold transition-colors ${shouldUseDarkTheme ? 'text-slate-900' : 'text-white'}`}>
               Nusava
             </span>
           </Link>
@@ -61,10 +66,10 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 ${
+                className={`text-sm transition-all hover:-translate-y-0.5 active:translate-y-0 hover:font-bold ${
                   pathname === link.href
-                    ? scrolled ? 'text-blue-600' : 'text-white'
-                    : scrolled ? 'text-slate-600 hover:text-blue-600' : 'text-white/70 hover:text-white'
+                    ? shouldUseDarkTheme ? 'text-blue-600 font-bold' : 'text-white font-bold'
+                    : shouldUseDarkTheme ? 'text-slate-600 hover:text-blue-600 font-normal' : 'text-white/70 hover:text-white font-normal'
                 }`}
               >
                 {link.name}
@@ -78,15 +83,19 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className={`text-sm font-bold px-6 py-2.5 rounded-xl transition-all ${
-                    scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'
+                  className={`text-sm px-6 py-2.5 rounded-xl transition-all hover:font-bold ${
+                    shouldUseDarkTheme ? 'text-slate-600 hover:text-slate-900 font-normal' : 'text-white/80 hover:text-white font-normal'
                   }`}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="px-8 py-3 bg-white text-slate-900 rounded-full text-sm font-bold shadow-lg shadow-slate-200/50 hover:bg-slate-50 hover:-translate-y-0.5 active:translate-y-0 transition-all border border-slate-100"
+                  className={`px-8 py-3 rounded-full text-sm font-bold shadow-lg transition-all border ${
+                    shouldUseDarkTheme 
+                      ? 'bg-slate-900 text-white border-slate-900 hover:bg-black' 
+                      : 'bg-white text-slate-900 border-slate-100 hover:bg-slate-50'
+                  }`}
                 >
                   Join Us
                 </Link>
@@ -97,16 +106,20 @@ export default function Navbar() {
                 <button 
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className={`flex items-center gap-3 p-1 pr-4 rounded-full transition-all ${
-                    scrolled ? 'bg-slate-100 hover:bg-slate-200' : 'bg-white/10 hover:bg-white/20'
+                    shouldUseDarkTheme ? 'bg-slate-100 hover:bg-slate-200' : 'bg-white/10 hover:bg-white/20'
                   }`}
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                    {user.name[0].toUpperCase()}
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold overflow-hidden shrink-0">
+                    {user.avatar ? (
+                      <img src={`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}${user.avatar}`} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      user.name[0].toUpperCase()
+                    )}
                   </div>
-                  <span className={`text-sm font-bold ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+                  <span className={`text-sm transition-all ${shouldUseDarkTheme ? 'text-slate-900 font-normal' : 'text-white font-normal'}`}>
                     {user.name.split(' ')[0]}
                   </span>
-                  <svg className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''} ${scrolled ? 'text-slate-400' : 'text-white/50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-4 h-4 transition-transform ${showUserMenu ? 'rotate-180' : ''} ${shouldUseDarkTheme ? 'text-slate-400' : 'text-white/50'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -135,7 +148,7 @@ export default function Navbar() {
                           My Dashboard
                         </Link>
                       )}
-                      
+
                       <Link 
                         href="/inquiries"
                         className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
@@ -144,6 +157,36 @@ export default function Navbar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                         </svg>
                         My Inquiries
+                      </Link>
+
+                      <Link 
+                        href="/wishlist"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        Wishlist
+                      </Link>
+
+                      <Link 
+                        href="/purchases"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        My Purchases
+                      </Link>
+
+                      <Link 
+                        href="/profile"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Profile Settings
                       </Link>
 
                       <button 

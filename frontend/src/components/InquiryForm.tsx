@@ -40,69 +40,84 @@ export default function InquiryForm({ propertyId, agentName }: { propertyId: str
   };
 
   return (
-    <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 shadow-sm sticky top-24">
-      <h3 className="text-xl font-bold mb-6">Interested in this property?</h3>
+    <div className="bg-white p-8 md:p-10 rounded-[2rem] border border-slate-200 sticky top-24">
+      <div className="mb-10">
+        <h3 className="text-2xl font-bold text-slate-900 mb-2">Interested?</h3>
+        <p className="text-slate-500 text-sm">Send an inquiry to our expert agent.</p>
+      </div>
       
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-600">
+      <div className="flex items-center gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 mb-10">
+        <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white text-xl">
           {agentName[0]}
         </div>
         <div>
-          <p className="font-bold">{agentName}</p>
-          <p className="text-sm text-gray-500">Property Agent</p>
+          <p className="text-slate-900 font-bold">{agentName}</p>
+          <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Property Specialist</p>
         </div>
       </div>
 
       {status === 'success' ? (
-        <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-100 mb-4 animate-in fade-in slide-in-from-bottom-2">
-          Your inquiry has been sent successfully! Our agent will contact you soon.
+        <div className="bg-green-50 text-green-700 p-6 rounded-2xl border border-green-100 mb-4 text-sm font-medium leading-relaxed">
+          <div className="flex items-center gap-2 mb-2 font-bold text-green-800">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Inquiry Sent
+          </div>
+          Your request has been received. Our agent will contact you shortly.
           <button 
             onClick={() => setStatus('idle')}
-            className="block mt-2 text-sm font-bold underline"
+            className="block mt-4 text-blue-600 font-bold hover:underline"
           >
             Send another inquiry
           </button>
         </div>
       ) : (
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <input 
-            type="text" 
-            required
-            key="name"
-            placeholder="Your Name" 
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-          <input 
-            type="email" 
-            required
-            key="email"
-            placeholder="Your Email" 
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
-          />
-          <textarea 
-            placeholder="Message" 
-            key="message"
-            required
-            rows={4}
-            value={formData.message}
-            onChange={(e) => setFormData({...formData, message: e.target.value})}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-          ></textarea>
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+            <input 
+              type="text" 
+              required
+              placeholder="Your Name" 
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:bg-white bg-slate-50 outline-none transition-all text-sm font-semibold"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+            <input 
+              type="email" 
+              required
+              placeholder="name@example.com" 
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:bg-white bg-slate-50 outline-none transition-all text-sm font-semibold"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Message</label>
+            <textarea 
+              placeholder="I'm interested in this property..." 
+              required
+              rows={4}
+              value={formData.message}
+              onChange={(e) => setFormData({...formData, message: e.target.value})}
+              className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-600 focus:bg-white bg-slate-50 outline-none transition-all text-sm font-semibold resize-none"
+            ></textarea>
+          </div>
           
           {status === 'error' && (
-            <p className="text-red-500 text-sm">Failed to send inquiry. Please try again.</p>
+            <p className="text-red-500 text-xs font-bold">Failed to send inquiry. Please try again.</p>
           )}
 
           <button 
             type="submit"
             disabled={status === 'sending'}
-            className={`w-full ${status === 'sending' ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold py-4 rounded-xl transition-all active:scale-[0.98]`}
+            className="w-full bg-slate-900 hover:bg-blue-600 text-white font-bold py-5 rounded-full transition-all active:scale-[0.98] disabled:opacity-50"
           >
-            {status === 'sending' ? 'Sending...' : 'Send Inquiry'}
+            {status === 'sending' ? 'Processing...' : 'Send Inquiry'}
           </button>
         </form>
       )}

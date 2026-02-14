@@ -6,11 +6,15 @@ interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   role: 'USER' | 'AGENT' | 'ADMIN';
+  avatar?: string;
+  createdAt: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  setUser: (user: User | null) => void;
   loading: boolean;
   login: (token: string, userData: User) => void;
   logout: () => void;
@@ -38,6 +42,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  const handleSetUser = (newUserData: User | null) => {
+    setUser(newUserData);
+    if (newUserData) {
+      localStorage.setItem('nusava_user', JSON.stringify(newUserData));
+    } else {
+      localStorage.removeItem('nusava_user');
+    }
+  };
+
   const login = (token: string, userData: User) => {
     localStorage.setItem('nusava_token', token);
     localStorage.setItem('nusava_user', JSON.stringify(userData));
@@ -51,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser: handleSetUser, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

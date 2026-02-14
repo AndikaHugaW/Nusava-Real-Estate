@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedCounter from '@/components/AnimatedCounter';
 import RevealText from '@/components/RevealText';
+import PropertyGrid from '@/components/PropertyGrid';
 import { useEffect } from 'react';
 
 
@@ -29,67 +30,85 @@ export default function Home() {
     viewport: { once: true }
   };
 
-  const properties = [
+  const mockProperties = [
     {
-      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+      id: 'mock-1',
       title: 'Rosewood Manor',
-      location: 'Miami, Florida, celinam delware 2098',
-      price: '$2,500',
-      beds: 3,
-      baths: 2,
-      slug: 'rosewood-manor'
+      city: 'Miami',
+      state: 'Florida',
+      price: 2500000000,
+      bedrooms: 3,
+      bathrooms: 2,
+      area: 48,
+      slug: 'rosewood-manor',
+      status: 'PUBLISHED',
+      images: [{ url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80', isPrimary: true }]
     },
     {
-      image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-      title: 'Rosewood Manor',
-      location: 'Miami, Florida, celinam delware 2098',
-      price: '$2,500',
-      beds: 3,
-      baths: 2,
-      area: '6x8 m',
-      slug: 'rosewood-manor-2'
+      id: 'mock-2',
+      title: 'Zen Studio Apartment',
+      city: 'Jakarta Barat',
+      state: 'DKI Jakarta',
+      price: 1200000000,
+      bedrooms: 1,
+      bathrooms: 1,
+      area: 35,
+      slug: 'zen-studio-apartment',
+      status: 'PUBLISHED',
+      images: [{ url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80', isPrimary: true }]
     },
     {
-      image: 'https://images.unsplash.com/photo-1600047533589-322197623910?w=800&q=80',
-      title: 'Rosewood Manor',
-      location: 'Miami, Florida, celinam delware 2098',
-      price: '$2,500',
-      beds: 3,
-      baths: 2,
-      area: '6x8 m',
-      slug: 'rosewood-manor-3'
+      id: 'mock-3',
+      title: 'Elite Townhouse Kemang',
+      city: 'Jakarta Selatan',
+      state: 'DKI Jakarta',
+      price: 7500000000,
+      bedrooms: 4,
+      bathrooms: 3,
+      area: 210,
+      slug: 'elite-townhouse-kemang',
+      status: 'PUBLISHED',
+      images: [{ url: 'https://images.unsplash.com/photo-1600047533589-322197623910?w=800&q=80', isPrimary: true }]
     },
     {
-      image: 'https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e?w=800&q=80',
-      title: 'Rosewood Manor',
-      location: 'Miami, Florida, celinam delware 2098',
-      price: '$2,500',
-      beds: 3,
-      baths: 2,
-      area: '6×8 m',
-      slug: 'rosewood-manor-4'
+      id: 'mock-4',
+      title: 'Premium Duplex in Seminyak',
+      city: 'Badung',
+      state: 'Bali',
+      price: 3500000000,
+      bedrooms: 2,
+      bathrooms: 2,
+      area: 150,
+      slug: 'premium-duplex-in-seminyak',
+      status: 'PUBLISHED',
+      images: [{ url: 'https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e?w=800&q=80', isPrimary: true }]
     },
     {
-      image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80',
-      title: 'Rosewood Manor',
-      location: 'Miami, Florida, celinam delware 2098',
-      price: '$2,500',
-      beds: 3,
-      baths: 2,
-      area: '6×8 m',
-      slug: 'rosewood-manor-5'
+      id: 'mock-5',
+      title: 'Modern Retail Space Ubud',
+      city: 'Gianyar',
+      state: 'Bali',
+      price: 15000000000,
+      bedrooms: 0,
+      bathrooms: 2,
+      area: 250,
+      slug: 'modern-retail-space-ubud',
+      status: 'PUBLISHED',
+      images: [{ url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80', isPrimary: true }]
     },
     {
-      image: 'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=800&q=80',
-      title: 'Rosewood Manor',
-      location: 'Miami, Florida, celinam delware 2098',
-      price: '$2,500',
-      beds: 3,
-      baths: 2,
-      area: '6×8 m',
-      slug: 'rosewood-manor-6'
-    },
-
+      id: 'mock-6',
+      title: 'Luxury Villa Uluwatu',
+      city: 'Kuta Selatan',
+      state: 'Bali',
+      price: 25000000000,
+      bedrooms: 5,
+      bathrooms: 5,
+      area: 600,
+      slug: 'luxury-villa-uluwatu',
+      status: 'PUBLISHED',
+      images: [{ url: 'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=800&q=80', isPrimary: true }]
+    }
   ];
   const testimonials = [
     {
@@ -134,16 +153,7 @@ export default function Home() {
     fetchProps();
   }, []);
 
-  const displayProperties = dbProperties.length > 0 ? dbProperties.map(p => ({
-    image: p.images?.[0]?.url ? (p.images[0].url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${p.images[0].url}` : p.images[0].url) : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
-    title: p.title,
-    location: `${p.city}, ${p.state}`,
-    price: `Rp ${p.price.toLocaleString('id-ID')}`,
-    beds: p.bedrooms,
-    baths: p.bathrooms,
-    area: `${p.area} m²`,
-    slug: p.slug
-  })) : properties;
+  const displayProperties = dbProperties.length > 0 ? dbProperties : mockProperties;
 
 
   const nextSlide = () => {
@@ -154,26 +164,30 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  const agents = [
+  const teamMembers = [
     {
-      name: 'Wade Warren',
-      role: 'Property Manager',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80',
+      name: 'Andika Huga W',
+      role: 'FOUNDER & CEO',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80',
+      bio: 'Visionary leader with 10+ years of real estate experience.',
     },
     {
-      name: 'Robert Fox',
-      role: 'Property Manager',
-      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=800&q=80',
+      name: 'Sarah Putri',
+      role: 'HEAD OF SALES',
+      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80',
+      bio: 'Expert in luxury property sales and client relations.',
     },
     {
-      name: 'Leslie Alexander',
-      role: 'Property Manager',
+      name: 'Budi Santoso',
+      role: 'CHIEF TECHNOLOGY OFFICER',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&q=80',
+      bio: 'Building innovative solutions for real estate technology.',
     },
     {
-      name: 'Jane Cooper',
-      role: 'Property Manager',
-      image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&q=80',
+      name: 'Maya Dewi',
+      role: 'HEAD OF MARKETING',
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&q=80',
+      bio: 'Creative strategist driving brand growth and visibility.',
     },
   ];
 
@@ -542,6 +556,71 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== POPULAR CITIES SECTION ===== */}
+      <section className="py-24 bg-white overflow-hidden">
+        <div className="max-w-screen-2xl mx-auto px-6 lg:px-16">
+          <div className="flex items-center justify-between mb-20">
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="text-5xl md:text-6xl font-bold text-slate-900 font-display"
+            >
+              Popular Cities
+            </motion.h2>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <Link 
+                href="/property" 
+                className="px-8 py-4 rounded-full border border-slate-200 text-slate-900 font-medium hover:bg-slate-900 hover:text-white transition-all flex items-center gap-2 group shadow-sm hover:shadow-md"
+              >
+                Explore All
+                <span className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7V17" />
+                  </svg>
+                </span>
+              </Link>
+            </motion.div>
+          </div>
+
+          <motion.div 
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12"
+          >
+            {[
+              { name: 'Canada', listings: '840 Listing', image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80' },
+              { name: 'USA', listings: '1140 Listing', image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80' },
+              { name: 'Australia', listings: '950 Listing', image: 'https://images.unsplash.com/photo-1600047533589-322197623910?w=800&q=80' },
+              { name: 'Dubai', listings: '570 Listing', image: 'https://images.unsplash.com/photo-1512918766775-d5eeec36113e?w=800&q=80' },
+            ].map((city, idx) => (
+              <motion.div 
+                key={idx}
+                variants={fadeInUp}
+                whileHover={{ y: -10 }}
+                className="group flex flex-col items-center text-center"
+              >
+                <div className="relative w-full aspect-square rounded-full overflow-hidden mb-8 border border-slate-100 shadow-xl shadow-slate-200/40 transition-shadow duration-500 group-hover:shadow-2xl group-hover:shadow-slate-300/50">
+                  <img 
+                    src={city.image} 
+                    alt={city.name} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">{city.name}</h3>
+                <p className="text-slate-500 font-medium">{city.listings}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* ===== EXPLORE PROPERTIES ===== */}
       <section className="py-24 bg-white">
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-16">
@@ -560,63 +639,7 @@ export default function Home() {
             </h2>
           </motion.div>
 
-          {/* Properties Grid */}
-          <motion.div 
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {displayProperties.map((item, i) => (
-              <motion.div 
-                key={i} 
-                variants={fadeInUp}
-                whileHover={{ y: -10 }}
-                className="group bg-white rounded-[2rem] border border-slate-100 p-4 transition-all hover:shadow-xl hover:shadow-slate-200/50"
-              >
-                {/* Property Image */}
-                <Link href={item.slug ? `/property/${item.slug}` : "/property"} className="block">
-                  <div className="relative aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-6">
-                    <img 
-                      src={item.image} 
-                      alt={item.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
-                </Link>
-                
-                {/* Property Info */}
-                <div className="px-2 pb-2">
-                  <div className="text-xl font-bold text-slate-900 mb-1">{item.price}</div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">{item.title}</h3>
-                  <p className="text-slate-500 text-sm mb-6">{item.location}</p>
-                  
-                  {/* Features Row */}
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001-1m-6 0h6" />
-                      </svg>
-                      <span className="text-slate-500 text-sm">{item.beds} Beds</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1zM21 16V6a1 1 0 00-1-1h-2a1 1 0 00-1 1v10a1 1 0 001 1h2a1 1 0 001-1z" />
-                      </svg>
-                      <span className="text-slate-500 text-sm">{item.baths} Bath</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                      </svg>
-                      <span className="text-slate-500 text-sm">{item.area}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+          <PropertyGrid properties={displayProperties} />
 
 
           {/* Large CTA Button */}
@@ -900,56 +923,53 @@ export default function Home() {
       <section className="py-24 bg-white overflow-hidden">
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-16">
           {/* Section Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20 max-w-3xl mx-auto"
-          >
-            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 leading-tight">
+          <div className="text-center mb-20">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight max-w-4xl mx-auto"
+            >
               Start Your Journey With Our Amazing Agents
-            </h2>
-          </motion.div>
-
+            </motion.h2>
+          </div>
+ 
           {/* Agents Grid */}
           <motion.div 
             variants={staggerContainer}
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12"
           >
-            {agents.map((agent, i) => (
+            {teamMembers.map((member, i) => (
               <motion.div 
                 key={i} 
                 variants={fadeInUp}
-                whileHover={{ y: -10 }}
-                className="group"
+                className="group cursor-pointer"
               >
                 {/* Agent Image */}
-                <div className="aspect-[4/5] rounded-[2rem] overflow-hidden mb-6">
+                <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden mb-6 border border-slate-100 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:shadow-slate-200/50">
                   <img 
-                    src={agent.image} 
-                    alt={agent.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    src={member.image} 
+                    alt={member.name} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
                 
                 {/* Agent Info */}
-                <div className="flex items-end justify-between">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-1">{agent.name}</h3>
-                    <p className="text-slate-500 font-medium">{agent.role}</p>
+                <div className="flex items-center justify-between px-2">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-slate-900 mb-0.5 group-hover:text-blue-600 transition-colors">{member.name}</h3>
+                    <p className="text-slate-500 text-sm font-medium">Property Manager</p>
                   </div>
-                  <motion.button 
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md group/btn"
-                  >
-                    <svg className="w-5 h-5 text-slate-400 group-hover/btn:text-slate-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  
+                  {/* Arrow Icon */}
+                  <div className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center transition-all duration-300 group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17L17 7M17 7H7M17 7V17" />
                     </svg>
-                  </motion.button>
+                  </div>
                 </div>
               </motion.div>
             ))}

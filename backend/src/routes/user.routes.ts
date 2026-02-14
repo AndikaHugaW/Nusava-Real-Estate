@@ -2,8 +2,40 @@ import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import prisma from '../lib/prisma';
 import { authMiddleware, adminMiddleware, AuthRequest } from '../middleware/auth.middleware';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const router = Router();
+
+// Configure multer for avatar storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = 'uploads/avatars';
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: (req: AuthRequest, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, `avatar-${req.userId}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    if (extname && mimetype) {
+      return cb(null, true);
+    }
+    cb(new Error('Only images (jpeg, jpg, png, webp) are allowed'));
+  }
+});
 
 // Get user profile
 router.get('/profile', authMiddleware, async (req: AuthRequest, res: Response) => {
@@ -16,12 +48,14 @@ router.get('/profile', authMiddleware, async (req: AuthRequest, res: Response) =
         name: true,
         phone: true,
         role: true,
+        avatar: true,
         createdAt: true,
         _count: {
           select: {
             properties: true,
             inquiries: true,
-            favorites: true
+            favorites: true,
+            transactions: true
           }
         }
       }
@@ -47,7 +81,8 @@ router.put('/profile', authMiddleware, async (req: AuthRequest, res: Response) =
         email: true,
         name: true,
         phone: true,
-        role: true
+        role: true,
+        avatar: true
       }
     });
 
@@ -55,6 +90,33 @@ router.put('/profile', authMiddleware, async (req: AuthRequest, res: Response) =
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Update avatar
+router.post('/avatar', authMiddleware, upload.single('avatar'), async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+    // Get old avatar to delete it? Maybe later.
+    const user = await prisma.user.update({
+      where: { id: req.userId },
+      data: { avatar: avatarUrl },
+      select: {
+        id: true,
+        avatar: true
+      }
+    });
+
+    res.json(user);
+  } catch (error) {
+    console.error('Update avatar error:', error);
+    res.status(500).json({ error: 'Failed to update avatar' });
   }
 });
 
@@ -91,7 +153,7 @@ router.put('/password', authMiddleware, async (req: AuthRequest, res: Response) 
   }
 });
 
-// Get user favorites
+// Get user favorites (Wishlist)
 router.get('/favorites', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const favorites = await prisma.favorite.findMany({
@@ -99,16 +161,42 @@ router.get('/favorites', authMiddleware, async (req: AuthRequest, res: Response)
       include: {
         property: {
           include: {
-            images: { take: 1 }
+            images: { where: { isPrimary: true }, take: 1 }
           }
         }
-      }
+      },
+      orderBy: { createdAt: 'desc' }
     });
 
     res.json(favorites);
   } catch (error) {
     console.error('Get favorites error:', error);
     res.status(500).json({ error: 'Failed to get favorites' });
+  }
+});
+
+// Get purchase history
+router.get('/purchases', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const purchases = await prisma.transaction.findMany({
+      where: { 
+        userId: req.userId,
+        type: 'PROPERTY_PURCHASE'
+      },
+      include: {
+        property: {
+          include: {
+            images: { where: { isPrimary: true }, take: 1 }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(purchases);
+  } catch (error) {
+    console.error('Get purchases error:', error);
+    res.status(500).json({ error: 'Failed to get purchases' });
   }
 });
 
@@ -189,6 +277,31 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Get users error:', error);
     res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
+// Public: Get all agents
+router.get('/agents', async (req, res) => {
+  try {
+    const agents = await prisma.user.findMany({
+      where: { role: 'AGENT' },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        avatar: true,
+        _count: {
+          select: { properties: true }
+        }
+      },
+      take: 4,
+      orderBy: { properties: { _count: 'desc' } }
+    });
+
+    res.json(agents);
+  } catch (error) {
+    console.error('Get agents error:', error);
+    res.status(500).json({ error: 'Failed' });
   }
 });
 

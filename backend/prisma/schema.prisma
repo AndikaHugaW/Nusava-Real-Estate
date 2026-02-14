@@ -27,6 +27,7 @@ model User {
   bookings       Booking[]
   transactions   Transaction[]
   propertyViews  PropertyView[]
+  avatar         String?
 }
 
 enum Role {
@@ -73,6 +74,7 @@ model Property {
   favorites   Favorite[]
   bookings    Booking[]
   views       PropertyView[]
+  transactions Transaction[]
   
   // Intelligence Layer (Investor Specs)
   roiEstimation Float?    // Annual ROI %
@@ -94,6 +96,9 @@ enum PropertyType {
   VILLA
   LAND
   COMMERCIAL
+  DUPLEX
+  TOWNHOUSE
+  STUDIO
 }
 
 enum PropertyStatus {
@@ -178,6 +183,9 @@ model Transaction {
   userId        String
   user          User     @relation(fields: [userId], references: [id])
   
+  propertyId    String?
+  property      Property? @relation(fields: [propertyId], references: [id])
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -193,6 +201,7 @@ enum TransactionType {
   SUBSCRIPTION
   FEATURED_LISTING
   COMMISSION
+  PROPERTY_PURCHASE
 }
 
 // Analytics for property views

@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 
 const inter = Inter({
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="id" className="light" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
+          <Toaster position="bottom-right" />
           <SmoothScroll>
             <Navbar />
             <main className="min-h-screen">

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 const menuItems = [
   { 
@@ -51,6 +52,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { user } = useAuth();
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
@@ -127,17 +129,21 @@ export default function DashboardLayout({
         </nav>
 
         <div className="p-4 border-t border-slate-50">
-          <div className={`flex items-center gap-3 p-2 rounded-2xl transition-all ${isSidebarOpen ? 'bg-slate-50' : ''}`}>
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0">
-              BS
+          <Link href="/profile" className={`flex items-center gap-3 p-2 rounded-2xl transition-all hover:bg-slate-50 group ${isSidebarOpen ? 'bg-slate-50' : ''}`}>
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0 overflow-hidden">
+              {user?.avatar ? (
+                <img src={`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}${user.avatar}`} alt="" className="w-full h-full object-cover" />
+              ) : (
+                user?.name?.[0]?.toUpperCase() || 'U'
+              )}
             </div>
             {isSidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-900 truncate">Budi Santoso</p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">Premium Agent</p>
+                <p className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{user?.name || 'User'}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">{user?.role || 'Member'}</p>
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </motion.aside>
 
