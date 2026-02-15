@@ -45,11 +45,7 @@ export default function EditPropertyPage() {
       
       const data = await res.json();
       
-      if (user && data.agentId !== user.id && user.role !== 'ADMIN') {
-        alert('You are not authorized to edit this property');
-        router.push('/dashboard/properties');
-        return;
-      }
+      // Removed individual agent ownership check to allow all dashboard users (Admin/Agent) to edit any property
 
       setFormData({
         title: data.title || '',
@@ -161,6 +157,30 @@ export default function EditPropertyPage() {
                 className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium resize-none"
               />
             </div>
+            <div className="md:col-span-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Price (IDR)</label>
+              <input 
+                required
+                type="number" 
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
+              />
+            </div>
+            <div className="md:col-span-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Property Type</label>
+              <select 
+                value={formData.type}
+                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-slate-600"
+              >
+                <option value="HOUSE">House</option>
+                <option value="VILLA">Villa</option>
+                <option value="APARTMENT">Apartment</option>
+                <option value="LAND">Land</option>
+                <option value="COMMERCIAL">Commercial</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -171,7 +191,7 @@ export default function EditPropertyPage() {
             Location & Specifications
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="md:col-span-2">
+            <div className="md:col-span-2">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Address</label>
               <input 
                 required
@@ -180,6 +200,14 @@ export default function EditPropertyPage() {
                 onChange={(e) => setFormData({...formData, address: e.target.value})}
                 className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium"
               />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">City</label>
+              <input required type="text" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">State</label>
+              <input required type="text" value={formData.state} onChange={(e) => setFormData({...formData, state: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl" />
             </div>
             <div className="grid grid-cols-3 gap-6 md:col-span-2">
               <div>
@@ -191,30 +219,48 @@ export default function EditPropertyPage() {
                 <input required type="number" value={formData.bathrooms} onChange={(e) => setFormData({...formData, bathrooms: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-center" />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Area</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Area (m²)</label>
                 <input required type="number" value={formData.area} onChange={(e) => setFormData({...formData, area: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-center" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Media */}
+        {/* Intelligence Layer */}
         <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-6">
           <h3 className="text-xl font-bold flex items-center gap-3">
             <span className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-sm font-black">03</span>
-            Property Media
+            Investor Intelligence & Media
           </h3>
-          
-          <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">New Images (Optional)</label>
-            <p className="text-[10px] text-slate-400 mb-2">*Uploading new images will replace existing ones</p>
-            <input 
-              type="file" 
-              multiple 
-              accept="image/*"
-              onChange={(e) => setFormData({...formData, images: Array.from(e.target.files || [])})}
-              className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">ROI Estimation (%)</label>
+              <input type="number" step="0.1" value={formData.roiEstimation} onChange={(e) => setFormData({...formData, roiEstimation: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-black text-blue-600" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Rental Yield (%)</label>
+              <input type="number" step="0.1" value={formData.rentalYield} onChange={(e) => setFormData({...formData, rentalYield: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-black text-emerald-600" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Area Growth (%)</label>
+              <input type="number" step="0.1" value={formData.areaGrowth} onChange={(e) => setFormData({...formData, areaGrowth: e.target.value})} className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-black text-orange-600" />
+            </div>
+            <div className="md:col-span-3">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Features (Comma Separated)</label>
+              <input type="text" value={formData.features} onChange={(e) => setFormData({...formData, features: e.target.value})} placeholder="Private Pool, Security 24/7" className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl" />
+            </div>
+            
+            <div className="md:col-span-3">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Property Media</label>
+              <p className="text-[10px] text-slate-400 mb-2">*Uploading new images will replace existing ones</p>
+              <input 
+                type="file" 
+                multiple 
+                accept="image/*"
+                onChange={(e) => setFormData({...formData, images: Array.from(e.target.files || [])})}
+                className="w-full mt-2 px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4 mt-4">
@@ -226,7 +272,7 @@ export default function EditPropertyPage() {
               ))
             ) : (
               formData.existingImages.map((img: any, i: number) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 opacity-60">
+                <div key={i} className="aspect-square rounded-xl overflow-hidden border border-slate-100 opacity-80">
                   <img src={img.url.startsWith('/') ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${img.url}` : img.url} className="w-full h-full object-cover" alt="existing" />
                 </div>
               ))
@@ -236,7 +282,7 @@ export default function EditPropertyPage() {
 
         <div className="flex justify-end gap-4 pb-20">
           <button type="button" onClick={() => router.back()} className="px-10 py-5 bg-white border border-slate-200 text-slate-500 rounded-[2rem] font-bold hover:bg-slate-50 transition-all">Cancel</button>
-          <button type="submit" disabled={submitting} className="px-12 py-5 bg-blue-600 text-white rounded-[2rem] font-bold shadow-2xl shadow-blue-200 hover:bg-blue-700 transition-all disabled:bg-slate-300">
+          <button type="submit" disabled={submitting} className="px-12 py-5 bg-slate-900 text-white rounded-[2rem] font-bold shadow-2xl shadow-slate-900/20 hover:bg-slate-800 transition-all disabled:bg-slate-300">
             {submitting ? 'Updating...' : 'Save Changes'}
           </button>
         </div>

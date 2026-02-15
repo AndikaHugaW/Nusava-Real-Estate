@@ -11,6 +11,7 @@ const navLinks = [
   { name: 'About', href: '/about' },
   { name: 'Property', href: '/property' },
   { name: 'Blog', href: '/blogs' },
+  { name: 'Contact', href: '/contact' },
 ];
 
 export default function Navbar() {
@@ -28,10 +29,13 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isDarkPage = pathname?.startsWith('/property/') || pathname === '/wishlist' || pathname === '/profile';
+  const isDarkPage = pathname?.startsWith('/property/') || pathname === '/wishlist' || pathname === '/profile' || pathname === '/contact';
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/admin-login' || pathname === '/admin-register';
+  const isDashboardPage = pathname?.toLowerCase().startsWith('/dashboard');
+
   const shouldUseDarkTheme = scrolled || isDarkPage;
 
-  if (pathname?.startsWith('/dashboard')) return null;
+  if (isDashboardPage || isAuthPage) return null;
 
   return (
     <header
@@ -102,7 +106,9 @@ export default function Navbar() {
 
               </>
             ) : (
-              <div className="relative">
+              <div className="flex items-center gap-3">
+
+                <div className="relative">
                 <button 
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className={`flex items-center gap-3 p-1 pr-4 rounded-full transition-all ${
@@ -137,17 +143,7 @@ export default function Navbar() {
                         <p className="text-sm font-bold text-slate-900 truncate">{user.email}</p>
                       </div>
                       
-                      {user.role !== 'USER' && (
-                        <Link 
-                          href="/dashboard"
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                          </svg>
-                          My Dashboard
-                        </Link>
-                      )}
+
 
                       <Link 
                         href="/inquiries"
@@ -202,8 +198,9 @@ export default function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
           {/* Mobile Menu Button */}
           <button

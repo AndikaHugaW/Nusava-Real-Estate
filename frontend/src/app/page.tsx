@@ -42,7 +42,7 @@ export default function Home() {
       area: 48,
       slug: 'rosewood-manor',
       status: 'PUBLISHED',
-      images: [{ url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80', isPrimary: true }]
+      images: [{ url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true }]
     },
     {
       id: 'mock-2',
@@ -55,7 +55,7 @@ export default function Home() {
       area: 35,
       slug: 'zen-studio-apartment',
       status: 'PUBLISHED',
-      images: [{ url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80', isPrimary: true }]
+      images: [{ url: '/uploads/property-1771175040632-398665186.jpg', isPrimary: true }]
     },
     {
       id: 'mock-3',
@@ -68,7 +68,7 @@ export default function Home() {
       area: 210,
       slug: 'elite-townhouse-kemang',
       status: 'PUBLISHED',
-      images: [{ url: 'https://images.unsplash.com/photo-1600047533589-322197623910?w=800&q=80', isPrimary: true }]
+      images: [{ url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true }]
     },
     {
       id: 'mock-4',
@@ -81,7 +81,7 @@ export default function Home() {
       area: 150,
       slug: 'premium-duplex-in-seminyak',
       status: 'PUBLISHED',
-      images: [{ url: 'https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e?w=800&q=80', isPrimary: true }]
+      images: [{ url: '/uploads/property-1771175040632-398665186.jpg', isPrimary: true }]
     },
     {
       id: 'mock-5',
@@ -94,7 +94,7 @@ export default function Home() {
       area: 250,
       slug: 'modern-retail-space-ubud',
       status: 'PUBLISHED',
-      images: [{ url: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&q=80', isPrimary: true }]
+      images: [{ url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true }]
     },
     {
       id: 'mock-6',
@@ -107,7 +107,7 @@ export default function Home() {
       area: 600,
       slug: 'luxury-villa-uluwatu',
       status: 'PUBLISHED',
-      images: [{ url: 'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=800&q=80', isPrimary: true }]
+      images: [{ url: '/uploads/property-1771175040632-398665186.jpg', isPrimary: true }]
     }
   ];
   const testimonials = [

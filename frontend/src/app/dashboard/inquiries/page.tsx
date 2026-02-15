@@ -122,8 +122,10 @@ export default function InquiriesPage() {
 
                 <div className="md:w-64 space-y-4">
                   <div className="bg-slate-900 p-6 rounded-3xl text-white">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Property</p>
-                    <p className="font-bold text-sm line-clamp-2">{inquiry.property.title}</p>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Source</p>
+                    <p className="font-bold text-sm line-clamp-2">
+                      {inquiry.property?.title || 'General Inquiry (Contact Us)'}
+                    </p>
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -163,7 +165,7 @@ export default function InquiriesPage() {
                 <div className="flex justify-between items-start mb-8">
                   <div>
                     <h3 className="text-2xl font-black text-slate-900">Reply to <span className="text-blue-600">{selectedInquiry.user.name}</span></h3>
-                    <p className="text-slate-500 mt-1 font-medium">Re: {selectedInquiry.property.title}</p>
+                    <p className="text-slate-500 mt-1 font-medium">Re: {selectedInquiry.property?.title || 'General Inquiry'}</p>
                   </div>
                   <button onClick={() => setSelectedInquiry(null)} className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

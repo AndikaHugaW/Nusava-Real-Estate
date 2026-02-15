@@ -29,13 +29,13 @@ export default function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <AuthProvider>
           <Toaster position="bottom-right" />
-          <SmoothScroll>
+          {/* <SmoothScroll> */}
             <Navbar />
             <main className="min-h-screen">
               {children}
             </main>
             <Footer />
-          </SmoothScroll>
+          {/* </SmoothScroll> */}
         </AuthProvider>
       </body>
     </html>

@@ -11,7 +11,10 @@ const footerLinks = {
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/dashboard')) return null;
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/admin-login' || pathname === '/admin-register';
+  const isDashboardPage = pathname?.toLowerCase().startsWith('/dashboard');
+
+  if (isDashboardPage || isAuthPage) return null;
 
   return (
     <footer className="bg-white pt-24">

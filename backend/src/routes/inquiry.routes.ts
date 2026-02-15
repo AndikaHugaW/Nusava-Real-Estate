@@ -6,26 +6,27 @@ import { validateRequest, inquirySchema } from '../middleware/validation';
 const router = Router();
 
 // Create inquiry
-router.post('/', authMiddleware, validateRequest(inquirySchema), async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-
     const { propertyId, message } = req.body;
 
-    // Check if property exists
-    const property = await prisma.property.findUnique({
-      where: { id: propertyId }
-    });
+    if (propertyId) {
+      // Check if property exists
+      const property = await prisma.property.findUnique({
+        where: { id: propertyId }
+      });
 
-    if (!property) {
-      res.status(404).json({ error: 'Property not found' });
-      return;
+      if (!property) {
+        res.status(404).json({ error: 'Property not found' });
+        return;
+      }
     }
 
     const inquiry = await prisma.inquiry.create({
       data: {
         message,
         userId: req.userId!,
-        propertyId
+        propertyId: propertyId || null
       },
       include: {
         user: {
@@ -64,15 +65,19 @@ router.get('/my', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Get inquiries for agent's properties
+// Get inquiries for agent's properties (or all for admin)
 router.get('/received', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
+    const where: any = {};
+    
+    if (req.userRole !== 'ADMIN') {
+      where.property = {
+        agentId: req.userId
+      };
+    }
+
     const inquiries = await prisma.inquiry.findMany({
-      where: {
-        property: {
-          agentId: req.userId
-        }
-      },
+      where,
       include: {
         user: {
           select: { id: true, name: true, email: true, phone: true }
@@ -107,7 +112,7 @@ router.patch('/:id/status', authMiddleware, async (req: AuthRequest, res: Respon
       return;
     }
 
-    if (inquiry.property.agentId !== req.userId) {
+    if (inquiry.property.agentId !== req.userId && req.userRole !== 'ADMIN') {
       res.status(403).json({ error: 'Not authorized to update this inquiry' });
       return;
     }

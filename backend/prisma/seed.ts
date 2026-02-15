@@ -3,18 +3,27 @@ import { PrismaClient, PropertyStatus, PropertyType } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create an agent first
-  const agent = await prisma.user.upsert({
-    where: { email: 'agent@nusava.com' },
-    update: {},
-    create: {
-      email: 'agent@nusava.com',
-      password: 'password123', // In real app, this should be hashed
-      name: 'Budi Santoso',
-      phone: '08123456789',
-      role: 'AGENT',
-    },
+  // Try to find the user from the screenshot (Fushiguro)
+  let mainUser = await prisma.user.findUnique({
+    where: { email: 'andikahuga@gmail.com' }
   });
+
+  // If not found, create/upsert the default agent
+  if (!mainUser) {
+    mainUser = await prisma.user.upsert({
+      where: { email: 'agent@nusava.com' },
+      update: {},
+      create: {
+        email: 'agent@nusava.com',
+        password: 'password123',
+        name: 'Budi Santoso',
+        phone: '08123456789',
+        role: 'AGENT',
+      },
+    });
+  }
+
+  const agent = mainUser;
 
   const properties = [
     {
@@ -39,8 +48,8 @@ async function main() {
       slug: 'modern-villa-rice-field-view',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200', isPrimary: true },
-          { url: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200' }
+          { url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true },
+          { url: '/uploads/property-1771175040632-398665186.jpg' }
         ]
       }
     },
@@ -66,7 +75,7 @@ async function main() {
       slug: 'luxury-apartment-cbd',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200', isPrimary: true }
+          { url: '/uploads/property-1771175040632-398665186.jpg', isPrimary: true }
         ]
       }
     },
@@ -92,7 +101,7 @@ async function main() {
       slug: 'tropical-garden-house',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200', isPrimary: true }
+          { url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true }
         ]
       }
     },
@@ -118,7 +127,7 @@ async function main() {
       slug: 'premium-duplex-seminyak',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200', isPrimary: true }
+          { url: '/uploads/property-1771175040632-398665186.jpg', isPrimary: true }
         ]
       }
     },
@@ -144,7 +153,7 @@ async function main() {
       slug: 'elite-townhouse-kemang',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1542314467-122e20fc842a?w=1200', isPrimary: true }
+          { url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true }
         ]
       }
     },
@@ -170,7 +179,7 @@ async function main() {
       slug: 'zen-studio-apartment',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1536376074432-bf12177d4f4f?w=1200', isPrimary: true }
+          { url: '/uploads/property-1771175040632-398665186.jpg', isPrimary: true }
         ]
       }
     },
@@ -196,13 +205,16 @@ async function main() {
       slug: 'modern-retail-space-ubud',
       images: {
         create: [
-          { url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200', isPrimary: true }
+          { url: '/uploads/property-1771174747646-330409659.jpeg', isPrimary: true }
         ]
       }
     }
   ];
 
-  console.log('Cleaning up old properties...');
+  console.log('Cleaning up old data...');
+  await prisma.favorite.deleteMany({});
+  await prisma.booking.deleteMany({});
+  await prisma.inquiry.deleteMany({});
   await prisma.propertyImage.deleteMany({});
   await prisma.propertyView.deleteMany({});
   await prisma.property.deleteMany({});
@@ -218,6 +230,60 @@ async function main() {
   }
 
   console.log('Seeding completed successfully!');
+
+  // Create some sample inquiries and transactions for the dashboard
+  console.log('Seeding sample inquiries...');
+  const firstProp = await prisma.property.findFirst();
+  const sampleUser = await prisma.user.findFirst({ where: { role: 'USER' } }) || await prisma.user.create({
+    data: {
+      email: 'buyer@example.com',
+      password: 'password123',
+      name: 'John Doe',
+      role: 'USER'
+    }
+  });
+
+  if (firstProp && sampleUser) {
+    console.log('Seeding multiple inquiries...');
+    const allProps = await prisma.property.findMany();
+    const buyers = [
+      { name: 'John Doe', email: 'john@example.com' },
+      { name: 'Sarah Wilson', email: 'sarah@example.com' },
+      { name: 'Michael Chen', email: 'michael@example.com' },
+      { name: 'Aaliyah Lovato', email: 'aaliyah@example.com' }
+    ];
+
+    for (const p of allProps) {
+      const buyer = buyers[Math.floor(Math.random() * buyers.length)];
+      let buyerUser = await prisma.user.findUnique({ where: { email: buyer.email } });
+      if (!buyerUser) {
+        buyerUser = await prisma.user.create({
+          data: { ...buyer, password: 'password123', role: 'USER' }
+        });
+      }
+
+      await prisma.inquiry.create({
+        data: {
+          message: `Interested in ${p.title}. Can I get more details?`,
+          userId: buyerUser.id,
+          propertyId: p.id,
+          status: 'PENDING'
+        }
+      });
+    }
+
+    console.log('Seeding sample transactions...');
+    await prisma.transaction.create({
+      data: {
+        amount: 8500000000,
+        status: 'COMPLETED',
+        type: 'PROPERTY_PURCHASE',
+        userId: agent.id,
+        propertyId: firstProp.id,
+        paymentMethod: 'BANK_TRANSFER'
+      }
+    });
+  }
 }
 
 main()

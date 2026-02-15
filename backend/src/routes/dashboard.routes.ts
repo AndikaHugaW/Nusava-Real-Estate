@@ -37,7 +37,10 @@ router.get('/agent', authMiddleware, agentMiddleware, async (req: AuthRequest, r
         where: { agentId },
         take: 5,
         orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { views: true, inquiries: true } } }
+        include: { 
+          _count: { select: { views: true, inquiries: true } },
+          images: { where: { isPrimary: true }, take: 1 }
+        }
       }),
       prisma.inquiry.findMany({
         where: { property: { agentId } },
@@ -75,7 +78,9 @@ router.get('/admin', authMiddleware, adminMiddleware, async (req: AuthRequest, r
       totalProperties,
       totalInquiries,
       totalBookings,
-      totalRevenue
+      totalRevenue,
+      recentProperties,
+      recentInquiries
     ] = await Promise.all([
       prisma.user.count({ where: { role: 'USER' } }),
       prisma.user.count({ where: { role: 'AGENT' } }),
@@ -85,6 +90,23 @@ router.get('/admin', authMiddleware, adminMiddleware, async (req: AuthRequest, r
       prisma.transaction.aggregate({
         where: { status: 'COMPLETED' },
         _sum: { amount: true }
+      }),
+      prisma.property.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { 
+          _count: { select: { views: true, inquiries: true } },
+          agent: { select: { name: true } },
+          images: { where: { isPrimary: true }, take: 1 }
+        }
+      }),
+      prisma.inquiry.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { name: true, email: true } },
+          property: { select: { title: true } }
+        }
       })
     ]);
 
@@ -96,7 +118,9 @@ router.get('/admin', authMiddleware, adminMiddleware, async (req: AuthRequest, r
         totalInquiries,
         totalBookings,
         totalRevenue: totalRevenue._sum.amount || 0
-      }
+      },
+      recentProperties,
+      recentInquiries
     });
   } catch (error) {
     console.error('Admin dashboard error:', error);

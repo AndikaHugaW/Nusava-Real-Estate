@@ -1,19 +1,22 @@
 import { getProperty, getProperties, getAgents } from '@/lib/api';
+export const revalidate = 0;
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import InquiryForm from '@/components/InquiryForm';
 import WishlistButton from '@/components/WishlistButton';
 import PropertyGrid from '@/components/PropertyGrid';
+import ROICalculator from '@/components/ROICalculator';
 
 export default async function PropertyDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
   const getImageUrl = (url: string) => {
-    if (!url) return 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
+    if (!url) return '/placeholder-property.jpg';
     if (url.startsWith('http')) return url;
-    return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${url}`;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   };
   
   let property;
@@ -43,13 +46,11 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
         {/* Hero Section Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch mb-16">
           {/* Left: Main Image */}
-          <div className="lg:col-span-8 relative rounded-[4rem] overflow-hidden min-h-[500px] lg:min-h-none h-full shadow-2xl border border-slate-100">
-            <Image 
+          <div className="lg:col-span-8 relative rounded-[4rem] overflow-hidden min-h-[500px] lg:min-h-none h-full shadow-2xl border border-slate-100 bg-slate-50">
+            <img 
               src={getImageUrl(primaryImage)} 
               alt={property.title}
-              fill
-              className="object-cover"
-              priority
+              className="w-full h-full object-cover"
             />
           </div>
 
@@ -220,35 +221,98 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
             </div>
 
             {/* Investor Intelligence */}
-            <div className="bg-white rounded-[4rem] p-12 text-slate-900 shadow-2xl">
-              <h3 className="text-2xl font-bold mb-10 flex items-center gap-3 text-slate-900">
+            <div className="bg-white rounded-[4rem] p-12 text-slate-900 shadow-2xl relative overflow-hidden">
+               {/* Decorative background element */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+              
+              <h3 className="text-2xl font-bold mb-10 flex items-center gap-3 text-slate-900 relative z-10">
                 <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                 </div>
                 Investor Intel
               </h3>
-              <div className="space-y-10">
-                <div className="flex justify-between items-end border-b border-slate-100 pb-6">
+              
+              <div className="space-y-10 relative z-10">
+                <div className="flex justify-between items-end border-b border-slate-100 pb-6 group cursor-default">
                   <div>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">ROI Estimation</p>
-                    <p className="text-4xl font-bold text-slate-900">{property.roiEstimation || 0}%</p>
+                    <p className="text-4xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors tracking-tight">{property.roiEstimation || 0}%</p>
                   </div>
-                  <p className="text-xs text-slate-400 font-bold uppercase">Annual</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Annual Return</p>
                 </div>
-                <div className="flex justify-between items-end border-b border-slate-100 pb-6">
+                <div className="flex justify-between items-end border-b border-slate-100 pb-6 group cursor-default">
                   <div>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Rental Yield</p>
-                    <p className="text-4xl font-bold text-blue-600">{property.rentalYield || 0}%</p>
+                    <p className="text-4xl font-bold text-blue-600 tracking-tight">{property.rentalYield || 0}%</p>
                   </div>
-                  <p className="text-xs text-slate-400 font-bold uppercase">Avg. yearly</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Avg. Yearly</p>
                 </div>
-                <div className="flex justify-between items-end">
+                <div className="flex justify-between items-end group cursor-default">
                   <div>
                     <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Area Growth</p>
-                    <p className="text-4xl font-bold text-green-600">+{property.areaGrowth || 0}%</p>
+                    <p className="text-4xl font-bold text-green-600 tracking-tight">+{property.areaGrowth || 0}%</p>
                   </div>
-                  <p className="text-xs text-slate-400 font-bold uppercase">5 Year</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">5 Year Trend</p>
                 </div>
+
+                {/* Nearby Places Section */}
+                {property.nearbyPlaces && Object.keys(property.nearbyPlaces as object).length > 0 && (
+                  <div className="pt-10 mt-10 border-t border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-6">Nearby Locations</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.entries(property.nearbyPlaces as object).map(([place, distance]) => (
+                        <div key={place} className="flex justify-between items-center p-3 bg-slate-50/50 rounded-2xl border border-slate-100">
+                          <span className="text-[11px] font-bold text-slate-900 capitalize">{place}</span>
+                          <span className="text-[11px] font-bold text-blue-600">{distance}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Interactive ROI Calculator */}
+            <ROICalculator price={property.price} />
+          </div>
+
+          {/* New CTA Section: Inquiry & Agent */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-32 items-start mt-16">
+            <div className="lg:col-span-7">
+              <h2 className="text-5xl font-bold text-slate-900 mb-8 font-display tracking-tight leading-tight">
+                Secure your investment <br /> 
+                <span className="text-slate-300">Talk to our expert today.</span>
+              </h2>
+              <p className="text-slate-500 text-xl font-light leading-relaxed mb-12 max-w-xl">
+                Our property specialists are ready to provide you with detailed ROI breakdowns, 
+                area analysis, and private tour arrangements for this property.
+              </p>
+              
+              <div className="flex flex-wrap gap-8 items-center p-8 bg-slate-50 rounded-[3rem] border border-slate-100 shadow-sm inline-flex">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                    <img 
+                      src={property.agent.avatar ? getImageUrl(property.agent.avatar) : `https://ui-avatars.com/api/?name=${property.agent.name}`} 
+                      alt={property.agent.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-slate-900">{property.agent.name}</h4>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Listing Agent</p>
+                  </div>
+                </div>
+                <div className="h-12 w-px bg-slate-200 hidden sm:block"></div>
+                <div className="space-y-1">
+                   <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Direct Contact</p>
+                   <p className="text-lg font-bold text-slate-900">{property.agent.phone || '+62 812-3456-7890'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-5">
+              <div className="sticky top-32">
+                <InquiryForm propertyId={property.id} agentName={property.agent.name} />
               </div>
             </div>
           </div>
@@ -258,12 +322,11 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-[0.3em] mb-12 opacity-60">Property Gallery</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {property.images.map((img: any, index: number) => (
-                <div key={index} className="relative aspect-[16/11] rounded-[3.5rem] overflow-hidden border border-slate-100 group shadow-2xl transition-all">
-                  <Image 
+                <div key={index} className="relative aspect-[16/11] rounded-[3.5rem] overflow-hidden border border-slate-100 group shadow-2xl transition-all bg-slate-50">
+                  <img 
                     src={getImageUrl(img.url)} 
                     alt={`${property.title} ${index + 1}`}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>

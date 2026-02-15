@@ -64,9 +64,10 @@ router.get('/', async (req, res) => {
     
     if (status && status !== 'All') {
       where.status = status;
-    } else {
+    } else if (!status) {
       where.status = { notIn: ['ARCHIVED', 'DRAFT'] };
     }
+    // If status === 'All', we don't add where.status, so it returns everything
     
     if (type && type !== 'All') where.type = type;
     if (city) where.city = { contains: city as string, mode: 'insensitive' };
@@ -235,7 +236,7 @@ router.put('/:id', authMiddleware, agentMiddleware, upload.array('images', 10), 
     
     const existing = await prisma.property.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
-    if (existing.agentId !== req.userId && req.userRole !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+    // Removed ownership check to allow all Agents/Admins to manage any property
 
     const body = req.body;
     const { title, status, ...rest } = body;
@@ -289,7 +290,7 @@ router.delete('/:id', authMiddleware, agentMiddleware, async (req: AuthRequest, 
     const id = req.params.id;
     const existing = await prisma.property.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
-    if (existing.agentId !== req.userId && req.userRole !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });
+    // Removed ownership check to allow all Agents/Admins to manage any property
 
     await prisma.property.update({ where: { id }, data: { status: 'ARCHIVED' } });
     res.json({ message: 'Archived' });

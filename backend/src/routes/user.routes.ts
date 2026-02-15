@@ -280,6 +280,35 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// Admin: Update user role
+router.patch('/:id/role', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!['USER', 'AGENT', 'ADMIN'].includes(role)) {
+      res.status(400).json({ error: 'Invalid role' });
+      return;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { role },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true
+      }
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Update user role error:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+
 // Public: Get all agents
 router.get('/agents', async (req, res) => {
   try {

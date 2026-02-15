@@ -3,6 +3,7 @@ import PropertySearchBar from '@/components/PropertySearchBar';
 import RevealText from '@/components/RevealText';
 import PropertyGrid from '@/components/PropertyGrid';
 import { getProperties } from '@/lib/api';
+export const revalidate = 0;
 
 export default async function PropertyPage({
   searchParams,

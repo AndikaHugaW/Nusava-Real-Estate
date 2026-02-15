@@ -28,6 +28,33 @@ export default function CreatePropertyPage() {
     areaGrowth: '',
     images: [] as File[]
   });
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(file => file.size <= 5 * 1024 * 1024);
+    
+    if (validFiles.length < files.length) {
+      alert('Some files were skipped because they exceed the 5MB size limit.');
+    }
+
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+    setPreviews(prev => [...prev, ...newPreviews]);
+    setFormData((prev: any) => ({...prev, images: [...prev.images, ...validFiles]}));
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...formData.images];
+    newImages.splice(index, 1);
+    
+    // Revoke the URL to prevent memory leaks
+    URL.revokeObjectURL(previews[index]);
+    const newPreviews = [...previews];
+    newPreviews.splice(index, 1);
+    
+    setPreviews(newPreviews);
+    setFormData((prev: any) => ({...prev, images: newImages}));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +91,8 @@ export default function CreatePropertyPage() {
       });
 
       if (res.ok) {
+        // Cleanup all previews before redirecting
+        previews.forEach(url => URL.revokeObjectURL(url));
         router.push('/dashboard/properties');
       } else {
         const error = await res.json();
@@ -266,25 +295,33 @@ export default function CreatePropertyPage() {
                   type="file" 
                   multiple
                   accept="image/*"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    setFormData({...formData, images: files});
-                  }}
+                  onChange={handleImageChange}
                   className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 
-                {formData.images.length > 0 && (
-                  <div className="grid grid-cols-4 gap-4 mt-2">
-                    {formData.images.map((file: File, i: number) => (
+                {previews.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mt-2">
+                    {previews.map((url: string, i: number) => (
                       <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-100 shadow-sm group">
                         <img 
-                          src={URL.createObjectURL(file)} 
+                          src={url} 
                           className="w-full h-full object-cover" 
                           alt="preview" 
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                           <span className="text-white text-[10px] font-bold uppercase">Image {i+1}</span>
+                           <button 
+                             type="button"
+                             onClick={() => removeImage(i)}
+                             className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors"
+                           >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                           </button>
                         </div>
+                        {i === 0 && (
+                          <div className="absolute top-2 left-2 px-2 py-0.5 bg-blue-600 text-[8px] font-black text-white uppercase rounded-md shadow-lg">Primary</div>
+                        )}
                       </div>
                     ))}
                   </div>

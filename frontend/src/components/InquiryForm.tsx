@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function InquiryForm({ propertyId, agentName }: { propertyId: string; agentName: string }) {
   const [formData, setFormData] = useState({
@@ -9,28 +10,45 @@ export default function InquiryForm({ propertyId, agentName }: { propertyId: str
     message: ''
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name,
+        email: user.email
+      }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user) {
+      alert('Please login to send an inquiry.');
+      return;
+    }
+
     setStatus('sending');
 
     try {
+      const token = localStorage.getItem('nusava_token');
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/inquiries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // In a real app, you'd send the auth token here.
-          // For now, since auth is tricky in this demo, let's assume the user is logged in or we handle it in the backend.
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           propertyId,
-          message: `Inquiry from ${formData.name} (${formData.email}): ${formData.message}`
+          message: formData.message || `Inquiry from ${formData.name}.`
         }),
       });
 
       if (res.ok) {
         setStatus('success');
-        setFormData({ name: '', email: '', message: '' });
+        setFormData({ name: user.name, email: user.email, message: '' });
       } else {
         setStatus('error');
       }

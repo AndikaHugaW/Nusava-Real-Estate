@@ -16,6 +16,9 @@ export default function PropertySearchBar() {
   const [selectedLocation, setSelectedLocation] = useState(searchParams.get('city') || 'All Locations');
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || 'All');
   const [selectedType, setSelectedType] = useState(searchParams.get('type') || 'All');
+  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
+  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
+  const [minBedrooms, setMinBedrooms] = useState(searchParams.get('bedrooms') || '');
   
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +42,15 @@ export default function PropertySearchBar() {
     
     if (selectedType !== 'All') params.set('type', selectedType);
     else params.delete('type');
+
+    if (minPrice) params.set('minPrice', minPrice);
+    else params.delete('minPrice');
+
+    if (maxPrice) params.set('maxPrice', maxPrice);
+    else params.delete('maxPrice');
+
+    if (minBedrooms) params.set('bedrooms', minBedrooms);
+    else params.delete('bedrooms');
 
     router.push(`/property?${params.toString()}`);
   };
@@ -151,7 +163,7 @@ export default function PropertySearchBar() {
           className="flex-1 w-full relative group"
           onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
         >
-          <div className={`flex items-center gap-4 px-8 py-5 border-b lg:border-b-0 lg:border-r border-slate-100 last:border-0 group hover:bg-slate-50 transition-all duration-500 rounded-[3.5rem] cursor-pointer ${activeDropdown === 'type' ? 'bg-slate-50' : ''}`}>
+          <div className={`flex items-center gap-4 px-8 py-5 border-b lg:border-b-0 lg:border-r border-slate-100 group hover:bg-slate-50 transition-all duration-500 rounded-[3.5rem] cursor-pointer ${activeDropdown === 'type' ? 'bg-slate-50' : ''}`}>
             <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 ${activeDropdown === 'type' ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-500 group-hover:bg-slate-900 group-hover:text-white'}`}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001-1m-6 0h6" />
@@ -195,6 +207,19 @@ export default function PropertySearchBar() {
           </AnimatePresence>
         </div>
 
+        {/* More Filters Toggle */}
+        <div 
+          className="px-6 cursor-pointer group flex items-center gap-3 py-5 hover:bg-slate-50 rounded-[3.5rem] transition-all"
+          onClick={() => setActiveDropdown(activeDropdown === 'more' ? null : 'more')}
+        >
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${activeDropdown === 'more' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'}`}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m12 4a2 2 0 100-4m0 4a2 2 0 110-4m-6 8v-2m-6 0v-2m12 0v-2" />
+            </svg>
+          </div>
+          <span className="text-sm font-bold text-slate-900">Filters</span>
+        </div>
+
         {/* Search Button */}
         <div className="p-2 w-full lg:w-auto">
           <button 
@@ -205,6 +230,71 @@ export default function PropertySearchBar() {
           </button>
         </div>
       </div>
+
+      {/* Expanded Filters Panel */}
+      <AnimatePresence>
+        {activeDropdown === 'more' && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mt-4"
+          >
+            <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Price Range (IDR)</label>
+                <div className="flex gap-4">
+                  <input 
+                    type="number" 
+                    placeholder="Min Price" 
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-2 focus:ring-black outline-none transition-all font-bold"
+                  />
+                  <input 
+                    type="number" 
+                    placeholder="Max Price" 
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:ring-2 focus:ring-black outline-none transition-all font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Min Bedrooms</label>
+                <div className="flex gap-3">
+                  {['1', '2', '3', '4', '5+'].map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setMinBedrooms(num.replace('+', ''))}
+                      className={`flex-1 py-4 rounded-2xl font-bold transition-all border ${minBedrooms === num.replace('+', '') ? 'bg-black text-white border-black' : 'bg-slate-50 text-slate-600 border-slate-100 hover:border-slate-300'}`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-end pb-1">
+                <button 
+                  onClick={() => {
+                    setMinPrice('');
+                    setMaxPrice('');
+                    setMinBedrooms('');
+                    setSelectedLocation('All Locations');
+                    setSelectedStatus('All');
+                    setSelectedType('All');
+                  }}
+                  className="text-sm font-bold text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  Reset all filters
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

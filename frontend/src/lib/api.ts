@@ -29,7 +29,7 @@ export async function getProperties(params?: any) {
   }
   const query = new URLSearchParams(cleanParams).toString();
   const res = await fetch(`${API_URL}/properties?${query}`, {
-    next: { revalidate: 3600 } // Cache for 1 hour
+    cache: 'no-store'
   });
 
   if (!res.ok) throw new Error('Failed to fetch properties');
@@ -38,7 +38,7 @@ export async function getProperties(params?: any) {
 
 export async function getProperty(identifier: string) {
   const res = await fetch(`${API_URL}/properties/${identifier}`, {
-    next: { revalidate: 3600 }
+    cache: 'no-store'
   });
   if (!res.ok) throw new Error('Failed to fetch property');
   return res.json();
@@ -53,9 +53,14 @@ export async function getAgentDashboard(token: string) {
   const res = await api.get('/dashboard/agent');
   return res.data;
 }
+
+export async function getAdminDashboard(token: string) {
+  const res = await api.get('/dashboard/admin');
+  return res.data;
+}
 export async function getAgents() {
   const res = await fetch(`${API_URL}/users/agents`, {
-    next: { revalidate: 3600 }
+    cache: 'no-store'
   });
   if (!res.ok) return [];
   return res.json();
@@ -73,5 +78,15 @@ export async function addToFavorites(propertyId: string) {
 
 export async function removeFromFavorites(propertyId: string) {
   const res = await api.delete(`/users/favorites/${propertyId}`);
+  return res.data;
+}
+
+export async function getUsers() {
+  const res = await api.get('/users');
+  return res.data;
+}
+
+export async function updateUserRole(id: string, role: string) {
+  const res = await api.patch(`/users/${id}/role`, { role });
   return res.data;
 }
