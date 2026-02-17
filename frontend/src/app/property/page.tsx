@@ -1,8 +1,9 @@
-import Link from 'next/link';
 import PropertySearchBar from '@/components/PropertySearchBar';
+import PropertyCategoryFilter from '@/components/PropertyCategoryFilter';
 import RevealText from '@/components/RevealText';
 import PropertyGrid from '@/components/PropertyGrid';
 import { getProperties } from '@/lib/api';
+import { Suspense } from 'react';
 export const revalidate = 0;
 
 export default async function PropertyPage({
@@ -16,13 +17,21 @@ export default async function PropertyPage({
   const search = resolvedSearchParams.search as string;
   const city = resolvedSearchParams.city as string;
 
+  let properties: any[] = [];
+  let fetchError = '';
 
-  const { properties, pagination } = await getProperties({
-    type: type === 'All' ? undefined : type?.toUpperCase(),
-    status: status === 'All' ? undefined : status?.toUpperCase(),
-    search: search,
-    city: city
-  });
+  try {
+    const data = await getProperties({
+      type: (!type || type === 'All') ? undefined : type.toUpperCase(),
+      status: (!status || status === 'All') ? undefined : status.toUpperCase(),
+      search: search || undefined,
+      city: city || undefined,
+    });
+    properties = data.properties || [];
+  } catch (error: any) {
+    console.error('Failed to fetch properties:', error?.message || error);
+    fetchError = 'Unable to load properties. Please make sure the backend is running.';
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,10 +62,14 @@ export default async function PropertyPage({
         </div>
       </section>
 
-      <PropertySearchBar />
+      <div className="relative z-30 pb-6">
+        <Suspense fallback={<div className="h-24" />}>
+          <PropertySearchBar />
+        </Suspense>
+      </div>
 
       {/* Property Grid Section */}
-      <section className="py-24">
+      <section className="py-20">
         <div className="max-w-screen-2xl mx-auto px-6 lg:px-16">
           
           {/* Section Header */}
@@ -70,46 +83,18 @@ export default async function PropertyPage({
           </div>
 
           {/* Categories Filter with Arrows */}
-          <div className="flex items-center gap-4 mb-16 overflow-hidden relative">
-            <button className="hidden sm:flex w-12 h-12 rounded-full border border-slate-100 items-center justify-center flex-shrink-0 text-slate-300 hover:text-slate-900 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
+          <Suspense fallback={<div className="h-16" />}>
+            <PropertyCategoryFilter />
+          </Suspense>
 
-            <div className="flex gap-3 overflow-x-auto no-scrollbar py-2 px-1">
-              {[
-                { label: 'All', value: 'All' },
-                { label: 'Villas', value: 'VILLA' },
-                { label: 'Apartments', value: 'APARTMENT' },
-                { label: 'Duplex Homes', value: 'DUPLEX' },
-                { label: 'Townhouses', value: 'TOWNHOUSE' },
-                { label: 'Studio Apartments', value: 'STUDIO' },
-                { label: 'Luxury Villas', value: 'VILLA' },
-                { label: 'Retail Spaces', value: 'COMMERCIAL' }
-              ].map((cat) => (
-                <Link
-                  key={cat.label}
-                  href={`/property?type=${cat.value}&status=${status || 'All'}&search=${search || ''}`}
-                  className={`px-8 py-4 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
-                    (type || 'All') === cat.value
-                      ? 'bg-slate-900 text-white shadow-lg shadow-black/10 scale-105'
-                      : 'bg-slate-50 text-slate-900 hover:bg-slate-100'
-                  }`}
-                >
-                  {cat.label}
-                </Link>
-              ))}
+          {fetchError ? (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-6 bg-rose-50 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+              </div>
+              <p className="text-slate-500 text-lg">{fetchError}</p>
             </div>
-
-            <button className="hidden sm:flex w-12 h-12 rounded-full border border-slate-900 items-center justify-center flex-shrink-0 text-slate-900 hover:bg-slate-900 hover:text-white transition-all">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-          {properties.length > 0 ? (
+          ) : properties.length > 0 ? (
             <PropertyGrid properties={properties} />
           ) : (
             <div className="text-center py-16">

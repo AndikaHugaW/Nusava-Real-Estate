@@ -218,6 +218,9 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
                   </div>
                 ))}
               </div>
+
+              {/* ROI Calculator - directly below features */}
+              <ROICalculator price={property.price} />
             </div>
 
             {/* Investor Intelligence */}
@@ -271,9 +274,6 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
                 )}
               </div>
             </div>
-
-            {/* Interactive ROI Calculator */}
-            <ROICalculator price={property.price} />
           </div>
 
           {/* New CTA Section: Inquiry & Agent */}

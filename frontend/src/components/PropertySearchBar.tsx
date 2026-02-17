@@ -235,12 +235,13 @@ export default function PropertySearchBar() {
       <AnimatePresence>
         {activeDropdown === 'more' && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden mt-4"
+            initial={{ opacity: 0, y: -20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="mt-6 mb-4"
           >
-            <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-[3rem] p-10 shadow-2xl shadow-slate-200/50 border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="space-y-4">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Price Range (IDR)</label>
                 <div className="flex gap-4">

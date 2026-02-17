@@ -67,7 +67,13 @@ export default function DashboardPage() {
       
       let dashboardData;
       if (user?.role === 'ADMIN') {
-        dashboardData = await getAdminDashboard(token);
+        try {
+          dashboardData = await getAdminDashboard(token);
+        } catch (adminError: any) {
+          // If 403 (role mismatch in token), fallback to agent dashboard
+          console.warn('Admin dashboard access denied, falling back to agent dashboard');
+          dashboardData = await getAgentDashboard(token);
+        }
       } else {
         dashboardData = await getAgentDashboard(token);
       }

@@ -22,18 +22,35 @@ export async function getProperties(params?: any) {
   const cleanParams: any = {};
   if (params) {
     Object.keys(params).forEach(key => {
-      if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
-        cleanParams[key] = params[key];
+      const val = params[key];
+      if (val !== undefined && val !== null && val !== '' && val !== 'All') {
+        cleanParams[key] = val;
       }
     });
   }
   const query = new URLSearchParams(cleanParams).toString();
-  const res = await fetch(`${API_URL}/properties?${query}`, {
-    cache: 'no-store'
-  });
+  const url = `${API_URL}/properties${query ? `?${query}` : ''}`;
+  
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  
+  try {
+    const res = await fetch(url, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
 
-  if (!res.ok) throw new Error('Failed to fetch properties');
-  return res.json();
+    if (!res.ok) {
+      console.error(`getProperties failed: ${res.status} ${res.statusText}`);
+      return { properties: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
+    }
+    return res.json();
+  } catch (error: any) {
+    clearTimeout(timeout);
+    console.error('getProperties fetch error:', error?.message || error);
+    return { properties: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
+  }
 }
 
 export async function getProperty(identifier: string) {
@@ -88,5 +105,23 @@ export async function getUsers() {
 
 export async function updateUserRole(id: string, role: string) {
   const res = await api.patch(`/users/${id}/role`, { role });
+  return res.data;
+}
+export async function updateProfile(data: { name: string; phone?: string }) {
+  const res = await api.put('/users/profile', data);
+  return res.data;
+}
+
+export async function updateAvatar(formData: FormData) {
+  const res = await api.post('/users/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+}
+
+export async function changePassword(data: any) {
+  const res = await api.put('/users/password', data);
   return res.data;
 }

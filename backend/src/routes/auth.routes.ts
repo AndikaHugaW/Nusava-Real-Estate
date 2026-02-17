@@ -89,7 +89,9 @@ router.post('/login', validateRequest(loginSchema), async (req, res) => {
         email: user.email,
         name: user.name,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        avatar: user.avatar,
+        createdAt: user.createdAt
       },
       token
     });
